@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Workout Selector</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            margin: 0;
+            padding: 0;
+            height: 100vh;
+            background: linear-gradient(to right, #FFA500, #FF4500); /* Orange gradient background */
+        }
+        .container {
+            max-width: 500px;
+            margin: auto;
+            padding: 20px;
+            border: 1px solid #ccc;
+            border-radius: 10px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+            background-color: white; /* White background for the container */
+            margin-top: 50px;
+        }
+        select, button {
+            margin: 10px 0;
+            padding: 10px;
+            width: 100%;
+            font-size: 16px;
+            border: none;
+            border-radius: 5px; /* Adding border radius for a smooth edge */
+        }
+        button {
+            background: linear-gradient(to right, #FFA500, #FF4500); /* Orange gradient background */
+            color: white;
+            cursor: pointer;
+        }
+        button:hover {
+            background: linear-gradient(to right, #FF4500, #FFA500); /* Reverse gradient on hover */
+        }
+        #workouts {
+            margin-top: 20px;
+            font-size: 18px;
+        }
+        ul {
+            list-style-type: none;
+            padding: 0;
+        }
+        li {
+            margin: 5px 0;
+        }
+        .back-button {
+            background: linear-gradient(to right, #FFA500, #FF4500); /* Orange gradient background */
+            color: white;
+            margin-top: 20px;
+        }
+        .back-button:hover {
+            background: linear-gradient(to right, #FF4500, #FFA500); /* Reverse gradient on hover */
+        }
+
+        /* Responsive design for small screens */
+        @media (max-width: 600px) {
+            .container {
+                width: 90%;
+                padding: 15px;
+            }
+            select, button {
+                font-size: 14px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Workout Selector</h1>
+        <label for="muscle-group">Select a Muscle Group:</label>
+        <select id="muscle-group" aria-label="Select a muscle group">
+            <option value="">-- Choose a Muscle Group --</option>
+            <option value="chest">Chest</option>
+            <option value="back">Back</option>
+            <option value="legs">Legs</option>
+            <option value="shoulders">Shoulders</option>
+            <option value="arms">Arms</option>
+            <option value="core">Core</option>
+        </select>
+        <button onclick="getWorkouts()">Show Workouts</button>
+        <div id="workouts"></div>
+
+        <!-- Back to Home Button -->
+        <button class="back-button" onclick="window.location.href='index.html'">Back to Home</button>
+    </div>
+
+    <script>
+        function getWorkouts() {
+            const muscleGroup = document.getElementById("muscle-group").value;
+            const workoutsDiv = document.getElementById("workouts");
+
+            const workouts = {
+                chest: [
+                    "Bench Press",
+                    "Push-Ups",
+                    "Incline Dumbbell Press",
+                    "Chest Fly",
+                    "Cable Crossovers"
+                ],
+                back: [
+                    "Pull-Ups",
+                    "Barbell Rows",
+                    "Deadlifts",
+                    "Lat Pulldowns",
+                    "Seated Cable Rows"
+                ],
+                legs: [
+                    "Squats",
+                    "Lunges",
+                    "Leg Press",
+                    "Romanian Deadlifts",
+                    "Calf Raises"
+                ],
+                shoulders: [
+                    "Overhead Press",
+                    "Lateral Raises",
+                    "Front Raises",
+                    "Arnold Press",
+                    "Face Pulls"
+                ],
+                arms: [
+                    "Bicep Curls",
+                    "Tricep Dips",
+                    "Hammer Curls",
+                    "Skull Crushers",
+                    "Concentration Curls"
+                ],
+                core: [
+                    "Planks",
+                    "Russian Twists",
+                    "Bicycle Crunches",
+                    "Hanging Leg Raises",
+                    "Ab Rollouts"
+                ]
+            };
+
+            if (muscleGroup && workouts[muscleGroup]) {
+                const selectedWorkouts = workouts[muscleGroup];
+                workoutsDiv.innerHTML = ` 
+                    <h2>Workouts for ${muscleGroup.charAt(0).toUpperCase() + muscleGroup.slice(1)}:</h2>
+                    <ul>
+                        ${selectedWorkouts.map(workout => `<li>${workout}</li>`).join('')}
+                    </ul>
+                `;
+            } else {
+                workoutsDiv.innerHTML = "<p>Please select a valid muscle group.</p>";
+            }
+        }
+    </script>
+</body>
+</html>

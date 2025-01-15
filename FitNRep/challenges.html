@@ -1,0 +1,275 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Random Workout Challenge</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            background: linear-gradient(135deg, #ff7e5f, #feb47b);
+            margin: 0;
+            padding: 0;
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+            animation: backgroundFade 2s ease-in-out;
+        }
+
+        @keyframes backgroundFade {
+            0% { opacity: 0; }
+            100% { opacity: 1; }
+        }
+
+        .container {
+            max-width: 600px;
+            background-color: white;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+            width: 100%;
+        }
+
+        button {
+            background: linear-gradient(135deg, #ff4e50, #ff6a00);
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            font-size: 18px;
+            cursor: pointer;
+            border-radius: 5px;
+            margin-top: 20px;
+            transition: transform 0.2s ease;
+        }
+
+        button:hover {
+            background: linear-gradient(135deg, #ff6a00, #ff4e50);
+            transform: scale(1.1);
+        }
+
+        .challenge {
+            font-size: 1.5rem;
+            margin-top: 20px;
+            color: #555;
+        }
+
+        .timer {
+            font-size: 1.2rem;
+            margin-top: 20px;
+            color: #333;
+        }
+
+        select, input {
+            padding: 10px;
+            font-size: 16px;
+            border-radius: 5px;
+            margin-top: 20px;
+        }
+
+        .history {
+            margin-top: 20px;
+            font-size: 1rem;
+            color: #333;
+        }
+
+        .history ul {
+            list-style: none;
+            padding: 0;
+        }
+
+        .history ul li {
+            padding: 5px 0;
+        }
+
+        .clear-history {
+            margin-top: 10px;
+            font-size: 14px;
+            cursor: pointer;
+            color: #ff4e50;
+            background: none;
+            border: none;
+            text-decoration: underline;
+        }
+
+        .countdown {
+            width: 100%;
+            height: 10px;
+            background: #ddd;
+            margin-top: 10px;
+            border-radius: 5px;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .countdown div {
+            height: 100%;
+            background: linear-gradient(135deg, #ff4e50, #ff6a00);
+            transition: width 1s linear;
+        }
+
+        /* Responsive Design */
+        @media (max-width: 600px) {
+            .container {
+                padding: 15px;
+            }
+
+            button {
+                padding: 12px 24px;
+                font-size: 16px;
+            }
+
+            select, input {
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <div>
+        <label for="workoutType">Workout Type</label>
+        <select id="workoutType" aria-label="Select Workout Type" onchange="generateChallenge()">
+            <option value="free">Free Weights</option>
+            <option value="calisthenics">Calisthenics</option>
+            <option value="machine">Machine Weights</option>
+        </select>
+    </div>
+    <div>
+        <label for="category">Body Area</label>
+        <select id="category" aria-label="Select Body Area" onchange="generateChallenge()">
+            <option value="all">All Workouts</option>
+            <option value="upper">Upper Body</option>
+            <option value="lower">Lower Body</option>
+            <option value="full">Full Body</option>
+        </select>
+    </div>
+    <div>
+        <label for="customTimer">Custom Timer</label>
+        <input type="number" id="customTimer" aria-label="Set Custom Timer" placeholder="Set timer (5-60 seconds)" min="5" max="60" onchange="saveTimer()">
+    </div>
+
+    <div id="workout" class="challenge">Click the button below to get a new workout challenge!</div>
+    <div id="timer" class="timer"></div>
+    <div class="countdown">
+        <div id="progress"></div>
+    </div>
+    <button onclick="generateChallenge()">Generate Challenge</button>
+
+    <div class="history">
+        <h3>Previous Workouts</h3>
+        <ul id="historyList"></ul>
+        <button class="clear-history" onclick="clearHistory()">Clear History</button>
+    </div>
+
+    <div>
+        <a href="index.html">
+            <button>Home</button>
+        </a>
+    </div>
+</div>
+
+<script>
+    const workouts = {
+        free: {
+            all: ['Bicep Curl', 'Deadlift', 'Bench Press'],
+            upper: ['Overhead Press', 'Bent-over Row'],
+            lower: ['Squats', 'Lunges'],
+            full: ['Clean and Jerk', 'Snatch']
+        },
+        calisthenics: {
+            all: ['Push-ups', 'Pull-ups', 'Burpees'],
+            upper: ['Dips', 'Plank Shoulder Taps'],
+            lower: ['Bodyweight Squats', 'Glute Bridges'],
+            full: ['Mountain Climbers', 'Jumping Jacks']
+        },
+        machine: {
+            all: ['Leg Press', 'Lat Pulldown', 'Chest Fly'],
+            upper: ['Cable Row', 'Shoulder Press'],
+            lower: ['Hamstring Curl', 'Leg Extension'],
+            full: ['Rowing Machine', 'Elliptical Trainer']
+        }
+    };
+
+    let workoutHistory = JSON.parse(localStorage.getItem('workoutHistory')) || [];
+    const savedTimer = localStorage.getItem('customTimer');
+    if (savedTimer) document.getElementById('customTimer').value = savedTimer;
+
+    updateHistoryUI();
+
+    function generateChallenge() {
+        const workoutType = document.getElementById('workoutType').value;
+        const category = document.getElementById('category').value;
+        const workoutList = workouts[workoutType][category] || workouts[workoutType].all;
+
+        if (!workoutList || workoutList.length === 0) {
+            updateText('workout', 'No workouts available for this category!');
+            return;
+        }
+
+        const randomIndex = Math.floor(Math.random() * workoutList.length);
+        const workout = workoutList[randomIndex];
+        updateText('workout', workout);
+
+        addToHistory(workout);
+
+        const customTime = document.getElementById('customTimer').value;
+        const countdown = (customTime >= 5 && customTime <= 60) ? customTime : 10;
+        startTimer(countdown);
+    }
+
+    function addToHistory(workout) {
+        workoutHistory.unshift(workout);
+        if (workoutHistory.length > 3) workoutHistory.pop();
+        localStorage.setItem('workoutHistory', JSON.stringify(workoutHistory));
+        updateHistoryUI();
+    }
+
+    function updateHistoryUI() {
+        const historyList = document.getElementById('historyList');
+        historyList.innerHTML = workoutHistory.map(w => `<li>${w}</li>`).join('');
+    }
+
+    function clearHistory() {
+        workoutHistory = [];
+        localStorage.removeItem('workoutHistory');
+        updateHistoryUI();
+    }
+
+    function startTimer(countdown) {
+        const progress = document.getElementById('progress');
+        const totalTime = countdown;
+        progress.style.width = '100%';
+        let timer = setInterval(() => {
+            countdown--;
+            const percentage = (countdown / totalTime) * 100;
+            progress.style.width = `${percentage}%`;
+
+            if (countdown <= 0) {
+                clearInterval(timer);
+                updateText('timer', 'Ready for the next challenge!');
+                progress.style.width = '0';
+            } else {
+                updateText('timer', `Rest for: ${countdown} seconds...`);
+            }
+        }, 1000);
+    }
+
+    function saveTimer() {
+        const customTimer = document.getElementById('customTimer').value;
+        if (customTimer >= 5 && customTimer <= 60) {
+            localStorage.setItem('customTimer', customTimer);
+        }
+    }
+
+    function updateText(elementId, text) {
+        const element = document.getElementById(elementId);
+        element.textContent = text;
+    }
+</script>
+
+</body>
+</html>

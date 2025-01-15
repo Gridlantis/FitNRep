@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Strength Lab</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            text-align: center;
+            background: linear-gradient(135deg, #FF7E5F, #FFB88C);
+            color: white;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+        }
+        h1, h2 {
+            margin-bottom: 20px;
+        }
+        select, label, input, button {
+            margin: 10px 0;
+            padding: 10px;
+            width: 100%;
+            max-width: 300px;
+            font-size: 16px;
+            border: none;
+            border-radius: 5px;
+        }
+        button {
+            background-color: #FF7E5F;
+            color: white;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #FFB88C;
+        }
+        .result, .error {
+            margin-top: 10px;
+            font-size: 16px;
+            font-weight: bold;
+        }
+        .error {
+            color: #FFD1D1;
+        }
+        .calculator {
+            display: none;
+            margin-top: 20px;
+        }
+        section {
+            margin: 20px 0;
+        }
+        #home-button {
+            margin-top: 20px;
+            background-color: #fff;
+            color: #FF7E5F;
+            font-weight: bold;
+            border: 2px solid #FF7E5F;
+            transition: background-color 0.3s, color 0.3s;
+        }
+        #home-button:hover {
+            background-color: #FF7E5F;
+            color: white;
+        }
+        @media screen and (max-width: 768px) {
+            body {
+                padding: 10px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <h1>Strength Lab</h1>
+    <p>Select the calculator you want to use:</p>
+    <select id="calculator-select" onchange="switchCalculator()">
+        <option value="">-- Select --</option>
+        <option value="hydration">Hydration Calculator</option>
+        <option value="onerepmax">One-Rep Max Calculator</option>
+    </select>
+
+    <!-- Hydration Calculator -->
+    <section id="hydration-calculator" class="calculator">
+        <h2>Hydration Calculator</h2>
+        <p>Enter your weight and exercise details to calculate hydration needs.</p>
+
+        <label for="unit">Unit:</label>
+        <select id="unit">
+            <option value="metric">Metric (kg)</option>
+            <option value="imperial">Imperial (lbs)</option>
+        </select>
+        <span id="unit-error" class="error"></span>
+
+        <label for="weight">Weight:</label>
+        <input type="number" id="weight" placeholder="Enter your weight" min="1">
+        <span id="weight-error" class="error"></span>
+
+        <label for="exercise-duration">Exercise Duration (hours):</label>
+        <input type="number" id="exercise-duration" placeholder="Enter duration of workout" min="0" step="0.1">
+        <span id="duration-error" class="error"></span>
+
+        <label for="weight-loss">Weight Lost During Exercise:</label>
+        <input type="number" id="weight-loss" placeholder="Enter weight lost during workout" min="0" step="0.1">
+        <span id="weight-loss-error" class="error"></span>
+
+        <button onclick="calculateHydration()">Calculate</button>
+        <button onclick="resetHydration()">Reset</button>
+
+        <div id="hydration-result" class="result" style="display: none;" aria-live="polite"></div>
+    </section>
+
+    <!-- One-Rep Max Calculator -->
+    <section id="onerepmax-calculator" class="calculator">
+        <h2>One-Rep Max Calculator</h2>
+
+        <label for="weight-lifted">Weight Lifted:</label>
+        <input type="number" id="weight-lifted" placeholder="Enter weight lifted" min="0">
+        <span id="lifted-weight-error" class="error"></span>
+
+        <label for="reps">Repetitions:</label>
+        <input type="number" id="reps" placeholder="Enter number of reps" min="1">
+        <span id="reps-error" class="error"></span>
+
+        <label for="units-lifted">Units:</label>
+        <select id="units-lifted">
+            <option value="lbs">lbs</option>
+            <option value="kg">kg</option>
+        </select>
+
+        <button onclick="calculate1RM()">Calculate</button>
+        <button onclick="reset1RM()">Reset</button>
+
+        <div id="onerepmax-result" class="result" style="display: none;" aria-live="polite"></div>
+    </section>
+
+    <!-- Home Button -->
+    <button id="home-button" onclick="location.href='index.html'">Home</button>
+
+    <script>
+        function switchCalculator() {
+            const selectedCalculator = document.getElementById("calculator-select").value;
+            document.querySelectorAll(".calculator").forEach(calculator => {
+                calculator.style.display = "none";
+            });
+            if (selectedCalculator) {
+                document.getElementById(`${selectedCalculator}-calculator`).style.display = "block";
+            }
+        }
+
+        function calculateHydration() {
+            const unit = document.getElementById("unit").value;
+            let weight = parseFloat(document.getElementById("weight").value);
+            const duration = parseFloat(document.getElementById("exercise-duration").value);
+            let weightLoss = parseFloat(document.getElementById("weight-loss").value);
+
+            document.querySelectorAll("#hydration-calculator .error").forEach(err => err.innerText = "");
+
+            if (!weight || weight <= 0) {
+                document.getElementById("weight-error").innerText = "Please enter a valid weight.";
+                return;
+            }
+            if (duration < 0) {
+                document.getElementById("duration-error").innerText = "Please enter a valid duration.";
+                return;
+            }
+            if (weightLoss < 0) {
+                document.getElementById("weight-loss-error").innerText = "Please enter a valid weight loss value.";
+                return;
+            }
+
+            if (unit === "imperial") {
+                weight /= 2.205;
+                weightLoss /= 2.205;
+            }
+
+            const dailyWater = (0.033 * weight).toFixed(2);
+            const duringExerciseWater = (0.25 * duration).toFixed(2);
+            const postExerciseWater = (weightLoss * 1.5).toFixed(2);
+
+            document.getElementById("hydration-result").style.display = "block";
+            document.getElementById("hydration-result").innerHTML = `
+                <strong>Hydration Needs:</strong><br>
+                Daily: ${dailyWater} L<br>
+                During Exercise: ${duringExerciseWater} L<br>
+                Post-Exercise: ${postExerciseWater} L<br>
+            `;
+        }
+
+        function calculate1RM() {
+            const weight = parseFloat(document.getElementById("weight-lifted").value);
+            const reps = parseInt(document.getElementById("reps").value);
+
+            if (!weight || weight <= 0) {
+                document.getElementById("lifted-weight-error").innerText = "Enter a valid weight.";
+                return;
+            }
+            if (!reps || reps <= 0) {
+                document.getElementById("reps-error").innerText = "Enter valid reps.";
+                return;
+            }
+
+            const oneRepMax = weight * (1 + 0.0333 * reps);
+            document.getElementById("onerepmax-result").style.display = "block";
+            document.getElementById("onerepmax-result").innerText = `Estimated 1RM: ${oneRepMax.toFixed(2)} ${document.getElementById("units-lifted").value}`;
+        }
+
+        function resetHydration() {
+            document.querySelectorAll("#hydration-calculator input").forEach(input => input.value = "");
+            document.getElementById("hydration-result").style.display = "none";
+        }
+
+        function reset1RM() {
+            document.querySelectorAll("#onerepmax-calculator input").forEach(input => input.value = "");
+            document.getElementById("onerepmax-result").style.display = "none";
+        }
+    </script>
+</body>
+</html>
